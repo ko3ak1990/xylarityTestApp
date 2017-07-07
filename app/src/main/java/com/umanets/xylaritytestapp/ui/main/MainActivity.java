@@ -3,6 +3,7 @@ package com.umanets.xylaritytestapp.ui.main;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.os.Parcelable;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.widget.Toast;
@@ -21,10 +22,12 @@ import javax.inject.Inject;
 
 import butterknife.BindView;
 import butterknife.ButterKnife;
+import timber.log.Timber;
 
 
 public class MainActivity extends BaseActivity implements MainMvpView {
-
+    private final static String LIST_STATE_KEY = "recycler_list_state";
+    Parcelable listState;
     private static final String EXTRA_TRIGGER_SYNC_FLAG =
             "com.umanets.xylaritytestapp.ui.main.MainActivity.EXTRA_TRIGGER_SYNC_FLAG";
 
@@ -39,6 +42,7 @@ public class MainActivity extends BaseActivity implements MainMvpView {
 
     @BindView(R.id.recycler_view)
     RecyclerView mRecyclerView;
+    private RecyclerView.LayoutManager mLayoutManager;
 
     /**
      * Return an Intent to start this Activity.
@@ -57,13 +61,13 @@ public class MainActivity extends BaseActivity implements MainMvpView {
         activityComponent().inject(this);
         setContentView(R.layout.activity_main);
         ButterKnife.bind(this);
-
+        mLayoutManager = new LinearLayoutManager(this);
         mRecyclerView.setAdapter(mWordsAdapter);
-        mRecyclerView.setLayoutManager(new LinearLayoutManager(this));
+        mRecyclerView.setLayoutManager(mLayoutManager);
         mMainPresenter.attachView(this);
         mMainPresenter.loadWords();
-
-        if (getIntent().getBooleanExtra(EXTRA_TRIGGER_SYNC_FLAG, true)) {
+        if (savedInstanceState==null&&
+                getIntent().getBooleanExtra(EXTRA_TRIGGER_SYNC_FLAG, true)) {
             startService(SyncService.getStartIntent(this));
         }
     }
@@ -71,9 +75,23 @@ public class MainActivity extends BaseActivity implements MainMvpView {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-
         mMainPresenter.detachView();
     }
+
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        listState = mLayoutManager.onSaveInstanceState();
+        state.putParcelable(LIST_STATE_KEY, listState);
+    }
+
+    protected void onRestoreInstanceState(Bundle state) {
+        super.onRestoreInstanceState(state);
+        // Retrieve list state and list/item positions
+        if(state != null)
+            listState = state.getParcelable(LIST_STATE_KEY);
+    }
+
+
 
     /***** MVP View methods implementation *****/
 
@@ -81,6 +99,10 @@ public class MainActivity extends BaseActivity implements MainMvpView {
     public void showWords(List<WordItem> words) {
         mWordsAdapter.setWordItems(words);
         mWordsAdapter.notifyDataSetChanged();
+        if (listState != null) {
+            Timber.d("restoring recylcer state");
+            mLayoutManager.onRestoreInstanceState(listState);
+        }
     }
 
     @Override

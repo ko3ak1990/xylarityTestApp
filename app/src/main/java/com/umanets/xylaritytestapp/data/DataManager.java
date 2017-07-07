@@ -22,18 +22,14 @@ public class DataManager {
 
     private final ApiService mApiService;
     private final RxEventBus mBus;
-    private final PreferencesHelper mPreferencesHelper;
 
     @Inject
-    public DataManager(ApiService apiService, RxEventBus bus, PreferencesHelper preferencesHelper) {
+    public DataManager(ApiService apiService, RxEventBus bus) {
         mApiService = apiService;
         mBus = bus;
-        mPreferencesHelper = preferencesHelper;
     }
 
-    public PreferencesHelper getPreferencesHelper() {
-        return mPreferencesHelper;
-    }
+
 
     public Observable<BackendResponse> syncWords() {
         return mApiService

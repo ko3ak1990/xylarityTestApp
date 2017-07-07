@@ -32,27 +32,29 @@ public class MainPresenter extends BasePresenter<MainMvpView> {
         mDataManager = dataManager;
         mBus = bus;
         dataManager.syncWords();
-        mBus.filteredObservable(SyncEvent.class).subscribe(new Subscriber<SyncEvent>() {
-            @Override
-            public void onCompleted() {
-
-            }
-
-            @Override
-            public void onError(Throwable e) {
-
-            }
-
-            @Override
-            public void onNext(SyncEvent syncEvent) {
-               loadWords();
-            }
-        });
     }
 
     @Override
     public void attachView(MainMvpView mvpView) {
         super.attachView(mvpView);
+        mBus.filteredObservable(SyncEvent.class)
+                .subscribe(new Subscriber<SyncEvent>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        if (isViewAttached())
+                            getMvpView().showError();
+                    }
+
+                    @Override
+                    public void onNext(SyncEvent syncEvent) {
+                        loadWords();
+                    }
+                });
     }
 
     @Override

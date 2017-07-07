@@ -42,6 +42,7 @@ class WordItemsAdapter extends RecyclerView.Adapter<WordItemsAdapter.WordItemVie
     public void onBindViewHolder(final WordItemViewHolder holder, int position) {
         WordItem word = mWordItems.get(position);
         holder.titleTextView.setText(word.name());
+        holder.langTextView.setText(word.country());
 
     }
 
@@ -52,7 +53,6 @@ class WordItemsAdapter extends RecyclerView.Adapter<WordItemsAdapter.WordItemVie
 
     class WordItemViewHolder extends RecyclerView.ViewHolder {
 
-        @BindView(R.id.view_hex_color) View hexColorView;
         @BindView(R.id.text_title) TextView titleTextView;
         @BindView(R.id.text_lange) TextView langTextView;
 
